@@ -31,8 +31,8 @@ const worker = new Worker('file-upload-queue',
         const docs = await loader.load(); //created the docs of pdf  
         const embeddings = new HuggingFaceInferenceEmbeddings({
             apiKey: process.env.HUGGINGFACEHUB_API_KEY, // or omit to rely on default env pickup
-            model: "google/embeddinggemma-300m", // Defaults to `BAAI/bge-base-en-v1.5` if not provided
-            provider: "hf-inference", // Falls back to auto selection mechanism within Hugging Face's inference API if not provided
+            model: "Qwen/Qwen3-Embedding-8B", // Defaults to `BAAI/bge-base-en-v1.5` if not provided
+            provider: "nebius", // Falls back to auto selection mechanism within Hugging Face's inference API if not provided
         });
 
         const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
