@@ -8,12 +8,16 @@ if (!process.env.HUGGINGFACEHUB_API_KEY) {
     throw new Error("HUGGINGFACEHUB_API_KEY is not set");
 }
 
+
 const redisConnection = process.env.REDIS_URL 
-    ? { url: process.env.REDIS_URL }
+    ? { 
+        url: process.env.REDIS_URL,
+        tls: {} // Required for Upstash
+      }
     : {
         host: process.env.REDIS_HOST || "localhost",
-        port: process.env.REDIS_PORT || "6379"
-    };
+        port: parseInt(process.env.REDIS_PORT) || 6379
+      };
 
 const worker = new Worker('file-upload-queue',
     async job => {

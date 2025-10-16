@@ -8,12 +8,16 @@ import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/
 import { ChatGroq } from "@langchain/groq";
 import "dotenv/config";
 
+
 const redisConnection = process.env.REDIS_URL
-  ? { url: process.env.REDIS_URL }
+  ? {
+    url: process.env.REDIS_URL,
+    tls: {} // Required for Upstash
+  }
   : {
-      host: process.env.REDIS_HOST || "localhost",
-      port: process.env.REDIS_PORT || "6379",
-    };
+    host: process.env.REDIS_HOST || "localhost",
+    port: parseInt(process.env.REDIS_PORT) || 6379
+  };
 
 const queue = new Queue("file-upload-queue", {
   connection: redisConnection,
