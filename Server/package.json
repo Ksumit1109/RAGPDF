@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "node --watch index.js",
     "dev:worker": "node --watch worker.js",
-    "start": "node index.js"
+    "start": "node index.js & node worker.js"
   },
   "dependencies": {
     "@huggingface/inference": "^4.11.1",
