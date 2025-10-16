@@ -54,11 +54,18 @@ app.listen(PORT, () => {
 
 app.post('/upload/pdf', upload.single('pdf'), async (req, res) => {
     try {
-        await queue.add("file-ready", JSON.stringify({
+        console.log('Upload received:', {
+            originalname: req.file?.originalname,
+            destination: req.file?.destination,
+            path: req.file?.path,
+            size: req.file?.size
+        })
+        await queue.add("file-ready", {
             filename: req.file.originalname,
             destination: req.file.destination,
             path: req.file.path
-        }))
+        })
+        console.log('Job enqueued for Qdrant ingestion')
         return res.json({ message: 'File uploaded' })
     } catch (error) {
         console.error('Upload error:', error)
@@ -75,6 +82,7 @@ app.get(`/chat`, async (req, res) => {
             provider: "nebius",
         });
         
+        console.log('Retrieval start for query:', userQuery)
         const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
             url: process.env.QDRANT_URL || "http://localhost:6333",
             collectionName: "pdf-docs",
@@ -82,6 +90,7 @@ app.get(`/chat`, async (req, res) => {
         
         const retriever = vectorStore.asRetriever({ k: 2 });
         const result = await retriever.invoke(userQuery);
+        console.log('Retrieved docs count:', Array.isArray(result) ? result.length : 0)
         
         const SYSTEM_PROMPT = `
             You are a helpfull AI Assistant who answeres the user query based on the available context from PDF file.
