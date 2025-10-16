@@ -3,6 +3,7 @@ import { Worker } from 'bullmq';
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
+import { CharacterTextSplitter } from "@langchain/textsplitters";
 
 if (!process.env.HUGGINGFACEHUB_API_KEY) {
     throw new Error("HUGGINGFACEHUB_API_KEY is not set");
@@ -28,6 +29,13 @@ const worker = new Worker('file-upload-queue',
         const loader = new PDFLoader(data.path);
         const docs = await loader.load();
         console.log('PDF loaded, pages:', Array.isArray(docs) ? docs.length : 0)
+
+        const textSplitter = new CharacterTextSplitter({
+            chunkSize: 100,
+            chunkOverlap: 0,
+        });
+        const splitDocs = await textSplitter.splitDocuments(docs);
+        console.log('Documents split into chunks:', Array.isArray(splitDocs) ? splitDocs.length : 0)
         
         const embeddings = new HuggingFaceInferenceEmbeddings({
             apiKey: process.env.HUGGINGFACEHUB_API_KEY,
@@ -41,11 +49,11 @@ const worker = new Worker('file-upload-queue',
                 collectionName: "pdf-docs",
             });
             console.log('Connected to existing Qdrant collection: pdf-docs')
-            await vectorStore.addDocuments(docs);
+            await vectorStore.addDocuments(splitDocs);
             console.log("Documents added to vector store for job:", job.id)
         } catch (err) {
             console.warn('Existing collection not found or add failed, creating new collection...', err?.message)
-            await QdrantVectorStore.fromDocuments(docs, embeddings, {
+            await QdrantVectorStore.fromDocuments(splitDocs, embeddings, {
                 url: process.env.QDRANT_URL || "http://localhost:6333",
                 collectionName: "pdf-docs",
             });
