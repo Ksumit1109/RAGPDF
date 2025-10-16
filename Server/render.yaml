@@ -1,32 +1,21 @@
 services:
   - type: web
-    name: pdf-chat-api
+    name: ai-file-server
     env: node
-    buildCommand: npm install
+    plan: free
+    rootDir: Server
+    buildCommand: npm install --force
     startCommand: npm start
     envVars:
-      - key: NODE_ENV
-        value: production
+      - key: REDIS_URL
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: HUGGINGFACEHUB_API_KEY
         sync: false
-      - key: REDIS_URL
-        sync: false
-      - key: QDRANT_URL
-        sync: false
-
-  - type: worker
-    name: pdf-worker
-    env: node
-    buildCommand: npm install
-    startCommand: npm run worker
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: HUGGINGFACEHUB_API_KEY
-        sync: false
-      - key: REDIS_URL
-        sync: false
-      - key: QDRANT_URL
-        sync: false
+      - key: PORT
+        value: 5000
